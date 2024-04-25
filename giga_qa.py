@@ -6,7 +6,7 @@ from prompts import QA_CREATOR, WRONG_A_GENERTOR, REGENERATOR_1
 from document_loaders import text_splitter
 import ast
 import asyncio
-from temp.tests import TEST_LEC
+# from temp.tests import TEST_LEC
 
 
 def regenerator(chunk, first_output):
@@ -81,13 +81,13 @@ def wa_validation(set_a, set_wa):
     count = 0
     for segments_wa, segments_a in zip(set_wa, set_a):
         count += 1
-        valid_segment = {f"question{count}": segments_a[0], "answer1": segments_a[1], "answer2": segments_wa[0],
-                         "answer3": segments_wa[1], "answer4": segments_wa[2], "right": '1'}
+        valid_segment = {f"question": segments_a[0], "variant1": segments_a[1], "variant2": segments_wa[0],
+                         "variant3": segments_wa[1], "variant4": segments_wa[2], "answer": 'variant1'}
         new_set.append(valid_segment)
 
     valid_set = []
     for segm in new_set:
-        if segm["answer1"] != segm["answer2"] != segm["answer3"]:
+        if segm["variant1"] != segm["variant2"] != segm["variant3"]:
             valid_set.append(segm)
 
     return valid_set
@@ -137,3 +137,5 @@ def qa_generator(text):
     print(validated_test)
     return str(validated_test)
 
+
+# qa_generator(TEST_LEC)
