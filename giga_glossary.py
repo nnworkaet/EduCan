@@ -2,10 +2,13 @@ from langchain.chat_models import GigaChat
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from api_getter import api_getter
-from prompts import MAP_TERM_FIND
+from prompts import MAP_TERM_FIND, DEFINITION_GEN
 from document_loaders import text_splitter
-from temp.tests import TEST_LEC, LEC_2
 import ast
+import re
+
+
+# from tests.tests import TEST_LEC, LEC_2
 
 
 def glossary(text):
@@ -19,31 +22,32 @@ def glossary(text):
     map_term_find = MAP_TERM_FIND
     map_term_find_prompt = PromptTemplate.from_template(map_term_find)
     map_term_find_chain = LLMChain(llm=llm, prompt=map_term_find_prompt)
-    full_gloss = []
+    all_terms = []
     for chunk in chunks:
         print("INPUT CHUNK:", chunk)
         res = map_term_find_chain.invoke({"chunk": chunk})
         print("OUTPUT:", res["text"])
-        if "\n" in res["text"]:
-            substrings = res["text"].split("\n")
-            final_sets = []
-            for substr in substrings:
-                pair = ast.literal_eval(substr)
-                final_sets.append(pair)
-        else:
-            final_sets = ast.literal_eval(res["text"])
-
-        print(final_sets)
-        for pair in final_sets:
-            if len(pair) >= 2:
-                part_gloss = {
-                    "name": pair[0],
-                    "definition": pair[1],
-                    "time": "Soon"
-                }
-                full_gloss.append(part_gloss)
-
-    print("GLOSSARY:", full_gloss)
-    return full_gloss
+        all_terms.extend(ast.literal_eval(res["text"]))
+    definition_gen = DEFINITION_GEN
+    definition_gen_prompt = PromptTemplate.from_template(definition_gen)
+    definition_gen_chain = LLMChain(llm=llm, prompt=definition_gen_prompt)
+    res = definition_gen_chain.invoke({"terms": str(all_terms)})
+    matches = re.findall(r'— (.*?)\.', res['text'])
+    print(matches)
+    all_matches = []
+    for match in matches:
+        match.strip()
+        all_matches.append(match)
+    print("GLOSS:", res["text"])
+    full_glossary = []
+    for i in range(len(all_matches)):
+        pair = {
+            "name": all_terms[i],
+            "definition": all_matches[i],
+            "time": "Soon"
+        }
+        full_glossary.append(pair)
+    print(full_glossary)
+    return res
 
 # glossary(TEST_LEC)

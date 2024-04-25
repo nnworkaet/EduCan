@@ -19,7 +19,7 @@ def text_splitter(text):
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
         separator='. ',
         encoding_name='cl100k_base',
-        chunk_size=3500,
+        chunk_size=3000,
         chunk_overlap=0
     )
     texts = text_splitter.split_text(text)
